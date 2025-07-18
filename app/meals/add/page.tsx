@@ -2,10 +2,11 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 import { MealForm } from "@/components/MealForm"
 
-export default function AddMeal() {
-  const { data: session, status } = useSession()
+function AddMealContent() {
+  const { status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -50,5 +51,17 @@ export default function AddMeal() {
         <MealForm initialData={initialData} />
       </div>
     </div>
+  )
+}
+
+export default function AddMeal() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <AddMealContent />
+    </Suspense>
   )
 }

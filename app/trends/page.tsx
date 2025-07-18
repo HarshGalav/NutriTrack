@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { Calendar, TrendingUp, Activity } from "lucide-react"
 import { WeeklyData } from "@/lib/types"
@@ -21,13 +21,7 @@ export default function Trends() {
     }
   }, [status, router])
 
-  useEffect(() => {
-    if (session) {
-      fetchWeeklyData()
-    }
-  }, [session, selectedWeeks])
-
-  const fetchWeeklyData = async () => {
+  const fetchWeeklyData = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch(`/api/nutrition/weekly?weeks=${selectedWeeks}`)
@@ -40,7 +34,13 @@ export default function Trends() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedWeeks])
+
+  useEffect(() => {
+    if (session) {
+      fetchWeeklyData()
+    }
+  }, [session, fetchWeeklyData])
 
   if (status === "loading" || loading) {
     return (

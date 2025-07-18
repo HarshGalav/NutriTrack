@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Plus, Camera, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
-import { MealData, DailyNutrition, UserGoals } from "@/lib/types"
-import { formatDate, getTodayDateString } from "@/lib/utils"
+import Image from "next/image"
+import { DailyNutrition, UserGoals } from "@/lib/types"
+import { getTodayDateString } from "@/lib/utils"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -91,7 +92,7 @@ export default function Dashboard() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Welcome back, {session.user?.name}!</h1>
-          <p className="text-muted-foreground">Today's nutrition overview</p>
+          <p className="text-muted-foreground">Today&apos;s nutrition overview</p>
         </div>
         <div className="flex space-x-4">
           <Link
@@ -174,16 +175,18 @@ export default function Dashboard() {
 
       {/* Today's Meals */}
       <div className="bg-card p-6 rounded-lg border">
-        <h2 className="text-xl font-semibold mb-4">Today's Meals</h2>
+        <h2 className="text-xl font-semibold mb-4">Today&apos;s Meals</h2>
         {dailyNutrition?.meals && dailyNutrition.meals.length > 0 ? (
           <div className="space-y-4">
             {dailyNutrition.meals.map((meal) => (
               <div key={meal.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div className="flex items-center space-x-4">
                   {meal.imageUrl && (
-                    <img
+                    <Image
                       src={meal.imageUrl}
                       alt={meal.name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 object-cover rounded-lg"
                     />
                   )}

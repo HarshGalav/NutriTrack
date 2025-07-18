@@ -67,7 +67,13 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date')
     const limit = searchParams.get('limit')
 
-    let whereClause: any = {
+    const whereClause: {
+      userId: string;
+      createdAt?: {
+        gte: Date;
+        lt: Date;
+      };
+    } = {
       userId: session.user.id,
     }
 

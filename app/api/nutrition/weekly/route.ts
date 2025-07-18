@@ -33,7 +33,16 @@ export async function GET(request: NextRequest) {
     })
 
     // Group meals by date and calculate daily totals
-    const dailyData: { [key: string]: any } = {}
+    const dailyData: { [key: string]: {
+      date: string;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      fiber: number;
+      sugar: number;
+      sodium: number;
+    } } = {}
 
     meals.forEach(meal => {
       const date = meal.createdAt.toISOString().split('T')[0]

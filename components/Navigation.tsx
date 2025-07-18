@@ -3,6 +3,7 @@
 import { useSession, signIn, signOut } from "next-auth/react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
+import Image from "next/image"
 import { Sun, Moon, User, LogOut, Home, Camera, Settings, BarChart3 } from "lucide-react"
 
 export function Navigation() {
@@ -67,9 +68,11 @@ export function Navigation() {
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-2">
                   {session.user?.image && (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt={session.user.name || ''}
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded-full"
                     />
                   )}

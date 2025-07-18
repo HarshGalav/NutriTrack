@@ -6,7 +6,7 @@ import { useState, useRef } from "react"
 import { Camera, Upload, Type, Loader2 } from "lucide-react"
 
 export default function ScanMeal() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [scanMode, setScanMode] = useState<'image' | 'text'>('image')

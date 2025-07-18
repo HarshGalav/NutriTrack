@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -14,9 +14,11 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const { id } = await params
+
     const meal = await prisma.meal.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     })
@@ -37,7 +39,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -45,6 +47,8 @@ export async function PUT(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const { id } = await params
 
     const body = await request.json()
     const {
@@ -64,7 +68,7 @@ export async function PUT(
 
     const meal = await prisma.meal.updateMany({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       data: {
@@ -88,7 +92,7 @@ export async function PUT(
     }
 
     const updatedMeal = await prisma.meal.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json(updatedMeal)
@@ -103,7 +107,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -112,9 +116,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const { id } = await params
+
     const result = await prisma.meal.deleteMany({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     })
