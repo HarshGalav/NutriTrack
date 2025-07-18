@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Meal } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,8 +41,18 @@ export async function GET(request: NextRequest) {
       sodium: number
     }
 
+    interface MealData {
+      calories: number
+      protein: number
+      carbs: number
+      fat: number
+      fiber: number | null
+      sugar: number | null
+      sodium: number | null
+    }
+
     const totalNutrition = meals.reduce(
-      (total: NutritionTotal, meal: Meal) => ({
+      (total: NutritionTotal, meal: MealData) => ({
         calories: total.calories + meal.calories,
         protein: total.protein + meal.protein,
         carbs: total.carbs + meal.carbs,
