@@ -13,22 +13,32 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0]
+    const timezoneOffset = parseInt(searchParams.get('timezoneOffset') || '0')
 
-    const startDate = new Date(date)
-    const endDate = new Date(date)
-    endDate.setDate(endDate.getDate() + 1)
+    // Get meals from the last 3 days to account for timezone differences
+    const threeDaysAgo = new Date()
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
 
-    const meals = await prisma.meal.findMany({
+    const allMeals = await prisma.meal.findMany({
       where: {
         userId: session.user.id,
         createdAt: {
-          gte: startDate,
-          lt: endDate,
+          gte: threeDaysAgo,
         },
       },
       orderBy: {
         createdAt: 'desc',
       },
+    })
+
+    // Filter meals by converting each meal's timestamp to the user's local date
+    const meals = allMeals.filter(meal => {
+      // Create a new date in the user's timezone
+      // Note: getTimezoneOffset() returns the offset in minutes, and it's positive for timezones west of UTC
+      const mealInUserTimezone = new Date(meal.createdAt.getTime() - (timezoneOffset * 60000))
+      const mealDateString = mealInUserTimezone.toISOString().split('T')[0]
+      
+      return mealDateString === date
     })
 
     interface NutritionTotal {

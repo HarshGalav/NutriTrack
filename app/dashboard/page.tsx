@@ -30,8 +30,13 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
+      const timezoneOffset = new Date().getTimezoneOffset()
+      const today = new Date()
+      // Get the local date string by adjusting for timezone offset
+      const localDate = new Date(today.getTime() - (timezoneOffset * 60000))
+      const localDateString = localDate.toISOString().split('T')[0]
       const [nutritionRes, goalsRes] = await Promise.all([
-        fetch(`/api/nutrition/daily?date=${getTodayDateString()}`),
+        fetch(`/api/nutrition/daily?date=${localDateString}&timezoneOffset=${timezoneOffset}`),
         fetch('/api/user/goals')
       ])
 
