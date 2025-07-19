@@ -5,20 +5,27 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
+    console.log("GET /api/nutrition/weekly - Starting request")
+    
     const session = await getServerSession(authOptions)
+    console.log("Session:", session ? "Found" : "Not found")
     
     if (!session?.user?.id) {
+      console.log("Unauthorized: No session or user ID")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
     const weeksBack = parseInt(searchParams.get('weeks') || '1')
+    console.log("Weeks back:", weeksBack)
 
     // Calculate date range for the past weeks
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(endDate.getDate() - (weeksBack * 7))
+    console.log("Date range:", startDate.toISOString(), "to", endDate.toISOString())
 
+    console.log("Attempting to fetch meals from database...")
     const meals = await prisma.meal.findMany({
       where: {
         userId: session.user.id,
@@ -31,6 +38,8 @@ export async function GET(request: NextRequest) {
         createdAt: 'asc',
       },
     })
+    
+    console.log("Found meals:", meals.length)
 
     // Group meals by date and calculate daily totals
     const dailyData: { [key: string]: {
@@ -88,8 +97,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result)
   } catch (error) {
     console.error("Error fetching weekly nutrition:", error)
+    console.error("Error details:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : "No stack trace",
+    })
+    
     return NextResponse.json(
-      { error: "Failed to fetch weekly nutrition" },
+      { 
+        error: "Failed to fetch weekly nutrition",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 }
     )
   }

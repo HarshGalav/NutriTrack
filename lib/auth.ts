@@ -4,8 +4,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "./prisma"
 
 export const authOptions: NextAuthOptions = {
-  // Temporarily disable Prisma adapter to test if database is the issue
-  // adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -13,17 +12,11 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    session: ({ session, token }) => {
-      if (session?.user && token?.sub) {
-        session.user.id = token.sub
+    session: ({ session, user }) => {
+      if (session?.user) {
+        session.user.id = user.id
       }
       return session
-    },
-    jwt: ({ token, user }) => {
-      if (user) {
-        token.id = user.id
-      }
-      return token
     },
     redirect: ({ url, baseUrl }) => {
       // Allows relative callback URLs
