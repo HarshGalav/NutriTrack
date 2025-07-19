@@ -7,7 +7,6 @@ import { Plus, Camera, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { DailyNutrition, UserGoals } from "@/lib/types"
-import { getTodayDateString } from "@/lib/utils"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()

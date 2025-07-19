@@ -6,6 +6,7 @@ A comprehensive Next.js application for tracking nutrition with AI-powered meal 
 
 - **🧑‍💻 User Authentication**: Google Sign-In with OAuth
 - **🍱 AI Meal Scanning**: Scan meals via image or text using Gemini AI
+- **📱 Barcode Scanner**: Scan product barcodes for instant nutrition data from Open Food Facts
 - **✍️ Manual Meal Entry**: Add and edit meals with detailed nutrition info
 - **🎯 Nutrition Goals**: Set and track daily nutrition targets
 - **📅 Daily Dashboard**: View daily nutrition summary with progress indicators
@@ -85,7 +86,8 @@ Before running this application, you need to set up:
 1. **Sign In**: Use Google OAuth to create an account
 2. **Set Goals**: Configure your daily nutrition targets in Settings
 3. **Log Meals**: 
-   - Scan meals using camera or text description
+   - Scan product barcodes for instant nutrition data
+   - Scan meals using camera or text description with AI
    - Manually add meals with detailed nutrition info
 4. **Track Progress**: View daily dashboard with progress indicators
 5. **Analyze Trends**: Check weekly nutrition trends with interactive charts
@@ -118,6 +120,7 @@ Before running this application, you need to set up:
 - `GET /api/nutrition/weekly` - Get weekly nutrition data
 - `GET /api/user/goals` - Get user's nutrition goals
 - `PUT /api/user/goals` - Update user's nutrition goals
+- `GET /api/barcode/[barcode]` - Get product info by barcode
 
 ## 🎨 Features in Detail
 
@@ -125,6 +128,14 @@ Before running this application, you need to set up:
 - Upload photos of meals for automatic nutrition analysis
 - Text-based meal description analysis
 - Powered by Google Gemini AI for accurate food recognition
+
+### Barcode Scanner
+- Real-time barcode detection using device camera
+- Integration with Open Food Facts database for product information
+- Offline support with local caching (IndexedDB)
+- Manual barcode entry fallback option
+- Automatic serving size calculation and nutrition scaling
+- Product review and editing before saving
 
 ### Nutrition Tracking
 - Comprehensive macro and micronutrient tracking

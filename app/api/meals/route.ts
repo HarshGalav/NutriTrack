@@ -34,6 +34,12 @@ export async function POST(request: NextRequest) {
       sodium,
       quantity,
       unit,
+      barcode,
+      brand,
+      source,
+      servingSize,
+      servingUnit,
+      notes,
     } = body;
 
     console.log("Attempting to create meal in database...");
@@ -42,7 +48,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: userId,
         name,
-        description,
+        description: description || notes,
         imageUrl,
         calories: parseFloat(calories),
         protein: parseFloat(protein),
@@ -51,8 +57,11 @@ export async function POST(request: NextRequest) {
         fiber: fiber ? parseFloat(fiber) : null,
         sugar: sugar ? parseFloat(sugar) : null,
         sodium: sodium ? parseFloat(sodium) : null,
-        quantity: parseFloat(quantity),
-        unit,
+        quantity: servingSize ? parseFloat(servingSize) : parseFloat(quantity || 1),
+        unit: servingUnit || unit || 'serving',
+        barcode: barcode || null,
+        brand: brand || null,
+        source: source || null,
       },
     });
 

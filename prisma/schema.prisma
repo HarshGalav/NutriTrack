@@ -83,6 +83,11 @@ model Meal {
   quantity    Float    @default(1)
   unit        String   @default("serving")
   
+  // Barcode support
+  barcode     String?
+  brand       String?
+  source      String?  // 'openfoodfacts', 'cache', 'manual', etc.
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
