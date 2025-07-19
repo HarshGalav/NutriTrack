@@ -17,6 +17,7 @@ export default function Trends() {
   const [chartType, setChartType] = useState<'line' | 'bar'>('line')
   const [viewMode, setViewMode] = useState<'trends' | 'daily'>('trends')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedNutrient, setSelectedNutrient] = useState<'calories' | 'protein' | 'carbs' | 'fat' | 'all'>('calories')
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -154,6 +155,17 @@ export default function Trends() {
                 <option value={2}>Last 2 Weeks</option>
                 <option value={4}>Last Month</option>
               </select>
+              <select
+                value={selectedNutrient}
+                onChange={(e) => setSelectedNutrient(e.target.value as 'calories' | 'protein' | 'carbs' | 'fat' | 'all')}
+                className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="calories">Calories</option>
+                <option value="protein">Protein</option>
+                <option value="carbs">Carbs</option>
+                <option value="fat">Fat</option>
+                <option value="all">All Nutrients</option>
+              </select>
               <div className="flex bg-muted p-1 rounded-lg">
                 <button
                   onClick={() => setChartType('line')}
@@ -240,51 +252,39 @@ export default function Trends() {
 
       {/* Content based on view mode */}
       {viewMode === 'trends' ? (
-        /* Charts */
-        <div className="space-y-8">
-          {/* Calories Chart */}
-          <div className="bg-card p-6 rounded-lg border">
-            <h2 className="text-xl font-semibold mb-4">Daily Calories</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <ChartComponent data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                {chartType === 'line' ? (
-                  <Line
-                    type="monotone"
-                    dataKey="calories"
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                    dot={{ fill: '#3b82f6' }}
-                  />
-                ) : (
-                  <Bar dataKey="calories" fill="#3b82f6" />
-                )}
-              </ChartComponent>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Macronutrients Chart */}
-          <div className="bg-card p-6 rounded-lg border">
-            <h2 className="text-xl font-semibold mb-4">Macronutrients</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <ChartComponent data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                {chartType === 'line' ? (
+        /* Chart */
+        <div className="bg-card p-6 rounded-lg border">
+          <h2 className="text-xl font-semibold mb-4">
+            {selectedNutrient === 'all' ? 'All Nutrients' : 
+             selectedNutrient === 'calories' ? 'Daily Calories' :
+             `Daily ${selectedNutrient.charAt(0).toUpperCase() + selectedNutrient.slice(1)}`}
+          </h2>
+          <ResponsiveContainer width="100%" height={400}>
+            <ChartComponent data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              {selectedNutrient === 'all' ? (
+                // Show all nutrients when "All" is selected
+                chartType === 'line' ? (
                   <>
+                    <Line
+                      type="monotone"
+                      dataKey="calories"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      dot={{ fill: '#3b82f6' }}
+                      name="Calories"
+                    />
                     <Line
                       type="monotone"
                       dataKey="protein"
                       stroke="#10b981"
                       strokeWidth={2}
                       dot={{ fill: '#10b981' }}
+                      name="Protein (g)"
                     />
                     <Line
                       type="monotone"
@@ -292,6 +292,7 @@ export default function Trends() {
                       stroke="#f59e0b"
                       strokeWidth={2}
                       dot={{ fill: '#f59e0b' }}
+                      name="Carbs (g)"
                     />
                     <Line
                       type="monotone"
@@ -299,18 +300,50 @@ export default function Trends() {
                       stroke="#8b5cf6"
                       strokeWidth={2}
                       dot={{ fill: '#8b5cf6' }}
+                      name="Fat (g)"
                     />
                   </>
                 ) : (
                   <>
-                    <Bar dataKey="protein" fill="#10b981" />
-                    <Bar dataKey="carbs" fill="#f59e0b" />
-                    <Bar dataKey="fat" fill="#8b5cf6" />
+                    <Bar dataKey="calories" fill="#3b82f6" name="Calories" />
+                    <Bar dataKey="protein" fill="#10b981" name="Protein (g)" />
+                    <Bar dataKey="carbs" fill="#f59e0b" name="Carbs (g)" />
+                    <Bar dataKey="fat" fill="#8b5cf6" name="Fat (g)" />
                   </>
-                )}
-              </ChartComponent>
-            </ResponsiveContainer>
-          </div>
+                )
+              ) : (
+                // Show selected nutrient only
+                chartType === 'line' ? (
+                  <Line
+                    type="monotone"
+                    dataKey={selectedNutrient}
+                    stroke={
+                      selectedNutrient === 'calories' ? '#3b82f6' :
+                      selectedNutrient === 'protein' ? '#10b981' :
+                      selectedNutrient === 'carbs' ? '#f59e0b' : '#8b5cf6'
+                    }
+                    strokeWidth={2}
+                    dot={{ 
+                      fill: selectedNutrient === 'calories' ? '#3b82f6' :
+                            selectedNutrient === 'protein' ? '#10b981' :
+                            selectedNutrient === 'carbs' ? '#f59e0b' : '#8b5cf6'
+                    }}
+                    name={selectedNutrient === 'calories' ? 'Calories' : `${selectedNutrient.charAt(0).toUpperCase() + selectedNutrient.slice(1)} (g)`}
+                  />
+                ) : (
+                  <Bar 
+                    dataKey={selectedNutrient} 
+                    fill={
+                      selectedNutrient === 'calories' ? '#3b82f6' :
+                      selectedNutrient === 'protein' ? '#10b981' :
+                      selectedNutrient === 'carbs' ? '#f59e0b' : '#8b5cf6'
+                    }
+                    name={selectedNutrient === 'calories' ? 'Calories' : `${selectedNutrient.charAt(0).toUpperCase() + selectedNutrient.slice(1)} (g)`}
+                  />
+                )
+              )}
+            </ChartComponent>
+          </ResponsiveContainer>
         </div>
       ) : (
         /* Daily View */
