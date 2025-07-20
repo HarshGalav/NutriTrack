@@ -26,14 +26,22 @@ export default function BarcodeScanner({
   const [manualBarcode, setManualBarcode] = useState("");
 
   const stopCamera = () => {
+    console.log("Stopping camera...");
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current.getTracks().forEach((track) => {
+        console.log("Stopping track:", track.kind);
+        track.stop();
+      });
       streamRef.current = null;
     }
     if (barcodeServiceRef.current) {
       barcodeServiceRef.current.stopDecoding();
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
     setIsScanning(false);
+    setHasPermission(null);
   };
 
   const startBarcodeDetection = async (videoElement: HTMLVideoElement) => {
@@ -180,7 +188,10 @@ export default function BarcodeScanner({
             </div>
             <div className="flex space-x-3">
               <button
-                onClick={startCamera}
+                onClick={() => {
+                  stopCamera();
+                  startCamera();
+                }}
                 className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
               >
                 <RotateCcw className="w-4 h-4 inline mr-2" />
@@ -194,7 +205,10 @@ export default function BarcodeScanner({
               </button>
             </div>
             <button
-              onClick={onClose}
+              onClick={() => {
+                stopCamera();
+                onClose();
+              }}
               className="mt-3 text-gray-500 hover:text-gray-700"
             >
               Cancel
@@ -211,7 +225,13 @@ export default function BarcodeScanner({
       <div className="absolute top-0 left-0 right-0 z-10 bg-black bg-opacity-50 p-4">
         <div className="flex justify-between items-center">
           <h2 className="text-white text-lg font-semibold">Scan Barcode</h2>
-          <button onClick={onClose} className="text-white hover:text-gray-300">
+          <button 
+            onClick={() => {
+              stopCamera();
+              onClose();
+            }} 
+            className="text-white hover:text-gray-300"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
