@@ -36,7 +36,7 @@ const retryMessages = {
 export default function AIAnalysisError({ 
   isVisible, 
   analysisType, 
-  errorMessage = "I couldn't recognize the food in your submission",
+  errorMessage = "I couldn&apos;t recognize the food in your submission",
   onRetry, 
   onManualEntry, 
   onClose 
@@ -133,7 +133,7 @@ export default function AIAnalysisError({
           
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground text-center">
-              Don't worry! You can always add meals manually with full control over the details.
+              Don&apos;t worry! You can always add meals manually with full control over the details.
             </p>
           </div>
         </div>

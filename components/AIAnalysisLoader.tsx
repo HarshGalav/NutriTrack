@@ -48,7 +48,6 @@ export default function AIAnalysisLoader({
     }
 
     let stepTimer: NodeJS.Timeout;
-    let progressTimer: NodeJS.Timeout;
     let progressInterval: NodeJS.Timeout;
 
     const runStep = (stepIndex: number) => {
@@ -83,7 +82,6 @@ export default function AIAnalysisLoader({
 
     return () => {
       clearTimeout(stepTimer);
-      clearTimeout(progressTimer);
       clearInterval(progressInterval);
     };
   }, [isVisible, analysisType, steps]);
@@ -151,7 +149,6 @@ export default function AIAnalysisLoader({
             const StepIcon = step.icon;
             const isCurrentStep = index === currentStep;
             const isCompletedStep = index < currentStep;
-            const isFutureStep = index > currentStep;
 
             return (
               <div
