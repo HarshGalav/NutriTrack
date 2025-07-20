@@ -108,158 +108,169 @@ export default function Trends() {
   const ChartComponent = chartType === 'line' ? LineChart : BarChart
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Nutrition Analysis</h1>
-          <p className="text-muted-foreground">
+    <div className="container mx-auto px-4 py-4 sm:py-8">
+      {/* Mobile-optimized header */}
+      <div className="mb-6 sm:mb-8">
+        <div className="text-center sm:text-left mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Nutrition Analysis</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             {viewMode === 'trends' ? 'Visualize your nutrition patterns over time' : 'View detailed nutrition data for specific dates'}
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          {/* View Mode Toggle */}
-          <div className="flex bg-muted p-1 rounded-lg">
-            <button
-              onClick={() => setViewMode('trends')}
-              className={`px-3 py-1 rounded text-sm flex items-center space-x-2 ${
-                viewMode === 'trends'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <TrendingUp className="w-4 h-4" />
-              <span>Trends</span>
-            </button>
-            <button
-              onClick={() => setViewMode('daily')}
-              className={`px-3 py-1 rounded text-sm flex items-center space-x-2 ${
-                viewMode === 'daily'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <CalendarDays className="w-4 h-4" />
-              <span>Daily</span>
-            </button>
+
+        {/* Mobile-first controls layout */}
+        <div className="space-y-4">
+          {/* View Mode Toggle - Always visible */}
+          <div className="flex justify-center sm:justify-start">
+            <div className="flex bg-muted p-1 rounded-lg">
+              <button
+                onClick={() => setViewMode('trends')}
+                className={`px-3 py-2 rounded text-sm flex items-center space-x-2 ${
+                  viewMode === 'trends'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Trends</span>
+              </button>
+              <button
+                onClick={() => setViewMode('daily')}
+                className={`px-3 py-2 rounded text-sm flex items-center space-x-2 ${
+                  viewMode === 'daily'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <CalendarDays className="w-4 h-4" />
+                <span>Daily</span>
+              </button>
+            </div>
           </div>
 
-          {/* Trends Controls */}
+          {/* Trends Controls - Mobile optimized */}
           {viewMode === 'trends' && (
-            <>
-              <select
-                value={selectedWeeks}
-                onChange={(e) => setSelectedWeeks(parseInt(e.target.value))}
-                className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value={1}>Last Week</option>
-                <option value={2}>Last 2 Weeks</option>
-                <option value={4}>Last Month</option>
-              </select>
-              <select
-                value={selectedNutrient}
-                onChange={(e) => setSelectedNutrient(e.target.value as 'calories' | 'protein' | 'carbs' | 'fat' | 'all')}
-                className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="calories">Calories</option>
-                <option value="protein">Protein</option>
-                <option value="carbs">Carbs</option>
-                <option value="fat">Fat</option>
-                <option value="all">All Nutrients</option>
-              </select>
-              <div className="flex bg-muted p-1 rounded-lg">
-                <button
-                  onClick={() => setChartType('line')}
-                  className={`px-3 py-1 rounded text-sm ${
-                    chartType === 'line'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
+            <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:space-x-4">
+              <div className="grid grid-cols-2 gap-3 sm:flex sm:space-x-3">
+                <select
+                  value={selectedWeeks}
+                  onChange={(e) => setSelectedWeeks(parseInt(e.target.value))}
+                  className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring text-sm"
                 >
-                  Line
-                </button>
-                <button
-                  onClick={() => setChartType('bar')}
-                  className={`px-3 py-1 rounded text-sm ${
-                    chartType === 'bar'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                  <option value={1}>Last Week</option>
+                  <option value={2}>Last 2 Weeks</option>
+                  <option value={4}>Last Month</option>
+                </select>
+                <select
+                  value={selectedNutrient}
+                  onChange={(e) => setSelectedNutrient(e.target.value as 'calories' | 'protein' | 'carbs' | 'fat' | 'all')}
+                  className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring text-sm"
                 >
-                  Bar
-                </button>
+                  <option value="calories">Calories</option>
+                  <option value="protein">Protein</option>
+                  <option value="carbs">Carbs</option>
+                  <option value="fat">Fat</option>
+                  <option value="all">All Nutrients</option>
+                </select>
               </div>
-            </>
+              <div className="flex justify-center sm:justify-start">
+                <div className="flex bg-muted p-1 rounded-lg">
+                  <button
+                    onClick={() => setChartType('line')}
+                    className={`px-4 py-2 rounded text-sm ${
+                      chartType === 'line'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Line
+                  </button>
+                  <button
+                    onClick={() => setChartType('bar')}
+                    className={`px-4 py-2 rounded text-sm ${
+                      chartType === 'bar'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Bar
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
-          {/* Daily Controls */}
+          {/* Daily Controls - Mobile optimized */}
           {viewMode === 'daily' && (
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-            />
+            <div className="flex justify-center sm:justify-start">
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+              />
+            </div>
           )}
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-card p-6 rounded-lg border">
+      {/* Summary Cards - Mobile optimized */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div className="bg-card p-4 sm:p-6 rounded-lg border">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
+            <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">
               {viewMode === 'trends' ? 'Avg Calories' : 'Calories'}
             </h3>
-            <Activity className="w-4 h-4 text-blue-500" />
+            <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
           </div>
-          <p className="text-2xl font-bold">{displayData.calories}</p>
+          <p className="text-lg sm:text-2xl font-bold">{displayData.calories}</p>
           <p className="text-xs text-muted-foreground">{dataLabel}</p>
         </div>
 
-        <div className="bg-card p-6 rounded-lg border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg border">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
+            <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">
               {viewMode === 'trends' ? 'Avg Protein' : 'Protein'}
             </h3>
-            <TrendingUp className="w-4 h-4 text-green-500" />
+            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
           </div>
-          <p className="text-2xl font-bold">{displayData.protein}g</p>
+          <p className="text-lg sm:text-2xl font-bold">{displayData.protein}g</p>
           <p className="text-xs text-muted-foreground">{dataLabel}</p>
         </div>
 
-        <div className="bg-card p-6 rounded-lg border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg border">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
+            <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">
               {viewMode === 'trends' ? 'Avg Carbs' : 'Carbs'}
             </h3>
-            <Calendar className="w-4 h-4 text-orange-500" />
+            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
           </div>
-          <p className="text-2xl font-bold">{displayData.carbs}g</p>
+          <p className="text-lg sm:text-2xl font-bold">{displayData.carbs}g</p>
           <p className="text-xs text-muted-foreground">{dataLabel}</p>
         </div>
 
-        <div className="bg-card p-6 rounded-lg border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg border">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
+            <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">
               {viewMode === 'trends' ? 'Avg Fat' : 'Fat'}
             </h3>
-            <TrendingUp className="w-4 h-4 text-purple-500" />
+            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
           </div>
-          <p className="text-2xl font-bold">{displayData.fat}g</p>
+          <p className="text-lg sm:text-2xl font-bold">{displayData.fat}g</p>
           <p className="text-xs text-muted-foreground">{dataLabel}</p>
         </div>
       </div>
 
       {/* Content based on view mode */}
       {viewMode === 'trends' ? (
-        /* Chart */
-        <div className="bg-card p-6 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-4">
+        /* Chart - Mobile optimized */
+        <div className="bg-card p-4 sm:p-6 rounded-lg border">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">
             {selectedNutrient === 'all' ? 'All Nutrients' : 
              selectedNutrient === 'calories' ? 'Daily Calories' :
              `Daily ${selectedNutrient.charAt(0).toUpperCase() + selectedNutrient.slice(1)}`}
           </h2>
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer width="100%" height={300} className="sm:!h-[400px]">
             <ChartComponent data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
@@ -346,9 +357,9 @@ export default function Trends() {
           </ResponsiveContainer>
         </div>
       ) : (
-        /* Daily View */
-        <div className="bg-card p-6 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-4">
+        /* Daily View - Mobile optimized */
+        <div className="bg-card p-4 sm:p-6 rounded-lg border">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">
             Meals for {new Date(selectedDate).toLocaleDateString('en-US', { 
               weekday: 'long', 
               year: 'numeric', 
@@ -357,29 +368,32 @@ export default function Trends() {
             })}
           </h2>
           {dailyData?.meals && dailyData.meals.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {dailyData.meals.map((meal) => (
-                <div key={meal.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                  <div className="flex items-center space-x-4">
+                <div key={meal.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-muted rounded-lg space-y-2 sm:space-y-0">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
                     {meal.imageUrl && (
                       <img
                         src={meal.imageUrl}
                         alt={meal.name}
-                        className="w-16 h-16 object-cover rounded-lg"
+                        className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg flex-shrink-0"
                       />
                     )}
-                    <div>
-                      <h3 className="font-medium">{meal.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {Math.round(meal.calories)} cal • {Math.round(meal.protein)}g protein • {Math.round(meal.carbs)}g carbs • {Math.round(meal.fat)}g fat
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-sm sm:text-base truncate">{meal.name}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        {Math.round(meal.calories)} cal • {Math.round(meal.protein)}g protein
+                      </p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        {Math.round(meal.carbs)}g carbs • {Math.round(meal.fat)}g fat
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {meal.quantity} {meal.unit}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {new Date(meal.createdAt).toLocaleTimeString('en-US', { 
                         hour: '2-digit', 
                         minute: '2-digit' 
