@@ -6,6 +6,8 @@ import { useState, useRef, useEffect, Suspense } from "react"
 import { Camera, Upload, Type, Loader2, Scan } from "lucide-react"
 import BarcodeScanner from "@/components/BarcodeScanner"
 import ProductReview from "@/components/ProductReview"
+import AIAnalysisLoader from "@/components/AIAnalysisLoader"
+import AIAnalysisError from "@/components/AIAnalysisError"
 import { BarcodeService, ScannedProduct } from "@/lib/barcode"
 
 function ScanMealContent() {
@@ -15,6 +17,10 @@ function ScanMealContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [scanMode, setScanMode] = useState<'image' | 'text' | 'barcode'>('barcode')
   const [textDescription, setTextDescription] = useState('')
+  const [showAILoader, setShowAILoader] = useState(false)
+  const [aiAnalysisType, setAiAnalysisType] = useState<'image' | 'text'>('image')
+  const [showAIError, setShowAIError] = useState(false)
+  const [aiErrorMessage, setAiErrorMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false)
   const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null)
@@ -45,6 +51,8 @@ function ScanMealContent() {
 
   const handleImageUpload = async (file: File) => {
     setIsLoading(true)
+    setAiAnalysisType('image')
+    setShowAILoader(true)
     
     try {
       // Convert image to base64
@@ -67,17 +75,26 @@ function ScanMealContent() {
 
         if (response.ok) {
           const mealData = await response.json()
-          // Redirect to meal form with pre-filled data
-          const params = new URLSearchParams(mealData)
-          router.push(`/meals/add?${params.toString()}`)
+          // Small delay to show completion state
+          setTimeout(() => {
+            setShowAILoader(false)
+            // Redirect to meal form with pre-filled data
+            const params = new URLSearchParams(mealData)
+            router.push(`/meals/add?${params.toString()}`)
+          }, 1000)
         } else {
-          alert('Failed to analyze image. Please try again.')
+          setShowAILoader(false)
+          const errorData = await response.json().catch(() => ({}))
+          setAiErrorMessage(errorData.error || "I couldn't recognize the food in your image")
+          setShowAIError(true)
         }
       }
       reader.readAsDataURL(file)
     } catch (error) {
       console.error('Error analyzing image:', error)
-      alert('Failed to analyze image. Please try again.')
+      setShowAILoader(false)
+      setAiErrorMessage("Failed to analyze image. Please check your connection and try again.")
+      setShowAIError(true)
     } finally {
       setIsLoading(false)
     }
@@ -87,6 +104,8 @@ function ScanMealContent() {
     if (!textDescription.trim()) return
 
     setIsLoading(true)
+    setAiAnalysisType('text')
+    setShowAILoader(true)
     
     try {
       const response = await fetch('/api/meals/analyze', {
@@ -102,15 +121,24 @@ function ScanMealContent() {
 
       if (response.ok) {
         const mealData = await response.json()
-        // Redirect to meal form with pre-filled data
-        const params = new URLSearchParams(mealData)
-        router.push(`/meals/add?${params.toString()}`)
+        // Small delay to show completion state
+        setTimeout(() => {
+          setShowAILoader(false)
+          // Redirect to meal form with pre-filled data
+          const params = new URLSearchParams(mealData)
+          router.push(`/meals/add?${params.toString()}`)
+        }, 1000)
       } else {
-        alert('Failed to analyze description. Please try again.')
+        setShowAILoader(false)
+        const errorData = await response.json().catch(() => ({}))
+        setAiErrorMessage(errorData.error || "I couldn't understand your meal description")
+        setShowAIError(true)
       }
     } catch (error) {
       console.error('Error analyzing text:', error)
-      alert('Failed to analyze description. Please try again.')
+      setShowAILoader(false)
+      setAiErrorMessage("Failed to analyze description. Please check your connection and try again.")
+      setShowAIError(true)
     } finally {
       setIsLoading(false)
     }
@@ -184,6 +212,24 @@ function ScanMealContent() {
   const handleManualBarcodeCancel = () => {
     setShowManualBarcodeEntry(false)
     setManualBarcodeInput("")
+  }
+
+  const handleAIErrorRetry = () => {
+    setShowAIError(false)
+    if (aiAnalysisType === 'image') {
+      fileInputRef.current?.click()
+    } else {
+      // For text, just close the error modal and let user modify their description
+    }
+  }
+
+  const handleAIErrorManualEntry = () => {
+    setShowAIError(false)
+    router.push('/meals/add')
+  }
+
+  const handleAIErrorClose = () => {
+    setShowAIError(false)
   }
 
   return (
@@ -473,6 +519,22 @@ function ScanMealContent() {
           onCancel={handleProductCancel}
         />
       )}
+
+      {/* AI Analysis Loader */}
+      <AIAnalysisLoader 
+        isVisible={showAILoader} 
+        analysisType={aiAnalysisType} 
+      />
+
+      {/* AI Analysis Error Modal */}
+      <AIAnalysisError
+        isVisible={showAIError}
+        analysisType={aiAnalysisType}
+        errorMessage={aiErrorMessage}
+        onRetry={handleAIErrorRetry}
+        onManualEntry={handleAIErrorManualEntry}
+        onClose={handleAIErrorClose}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 # NutriTrack - Complete Project Documentation & Interview Guide
 
 ## 📋 Table of Contents
+
 1. [Project Overview](#project-overview)
 2. [Technologies & Concepts Used](#technologies--concepts-used)
 3. [Architecture & Design Patterns](#architecture--design-patterns)
@@ -19,6 +20,7 @@
 **NutriTrack** is a comprehensive nutrition tracking web application built with modern web technologies. It features AI-powered meal analysis, advanced barcode scanning, goal tracking, and data visualization.
 
 ### Core Functionality
+
 - User authentication with Google OAuth
 - AI-powered meal scanning using Google Gemini API
 - Advanced barcode scanner with Open Food Facts integration
@@ -32,6 +34,7 @@
 ## 🛠️ Technologies & Concepts Used
 
 ### Frontend Technologies
+
 - **Next.js 15** - React framework with App Router
 - **React 19** - UI library with latest features
 - **TypeScript** - Type-safe JavaScript
@@ -41,6 +44,7 @@
 - **ZXing Library** - Barcode scanning functionality
 
 ### Backend Technologies
+
 - **Next.js API Routes** - Server-side API endpoints
 - **NextAuth.js** - Authentication framework
 - **Prisma ORM** - Database toolkit
@@ -49,6 +53,7 @@
 - **Open Food Facts API** - Product database
 
 ### Development Tools
+
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
 - **Git** - Version control
@@ -56,6 +61,7 @@
 - **Vercel** - Deployment platform
 
 ### Key Concepts
+
 - **Server-Side Rendering (SSR)**
 - **Client-Side Rendering (CSR)**
 - **API Design & RESTful Services**
@@ -72,6 +78,7 @@
 ## 🏗️ Architecture & Design Patterns
 
 ### Application Architecture
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   API Layer     │    │   Database      │
@@ -86,6 +93,7 @@
 ```
 
 ### Design Patterns Used
+
 1. **Component Composition Pattern** - Reusable UI components
 2. **Custom Hooks Pattern** - Shared logic extraction
 3. **Provider Pattern** - Context for global state
@@ -96,6 +104,7 @@
 8. **Strategy Pattern** - Different scanning methods
 
 ### File Structure
+
 ```
 ├── app/                    # Next.js App Router
 │   ├── api/               # API endpoints
@@ -115,36 +124,41 @@
 ## 🚀 Key Features Implementation
 
 ### 1. Barcode Scanner Implementation
+
 ```typescript
 // Key technologies: ZXing, MediaDevices API, IndexedDB
 class BarcodeService {
-  private reader: BrowserMultiFormatReader
-  
+  private reader: BrowserMultiFormatReader;
+
   async startContinuousDecoding(
     videoElement: HTMLVideoElement,
     onResult: (barcode: string) => void
   ) {
     await this.reader.decodeFromVideoDevice(
-      null, videoElement, (result, error) => {
-        if (result) onResult(result.getText())
+      null,
+      videoElement,
+      (result, error) => {
+        if (result) onResult(result.getText());
       }
-    )
+    );
   }
 }
 ```
 
 ### 2. AI Integration with Google Gemini
+
 ```typescript
 // Image and text analysis for nutrition data
-const analyzeFood = async (type: 'image' | 'text', data: string) => {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
-  const prompt = `Analyze this ${type} and provide nutrition information...`
-  const result = await model.generateContent([prompt, data])
-  return parseNutritionData(result.response.text())
-}
+const analyzeFood = async (type: "image" | "text", data: string) => {
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const prompt = `Analyze this ${type} and provide nutrition information...`;
+  const result = await model.generateContent([prompt, data]);
+  return parseNutritionData(result.response.text());
+};
 ```
 
 ### 3. Database Design with Prisma
+
 ```prisma
 model Meal {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -162,6 +176,7 @@ model Meal {
 ```
 
 ### 4. Authentication Flow
+
 ```typescript
 // NextAuth.js configuration
 export const authOptions: NextAuthOptions = {
@@ -173,7 +188,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   session: { strategy: "jwt" },
-}
+};
 ```
 
 ---
@@ -183,12 +198,15 @@ export const authOptions: NextAuthOptions = {
 ### React & Next.js Questions
 
 #### Basic Level
+
 1. **What is Next.js and how does it differ from Create React App?**
+
    - Next.js is a React framework with built-in SSR, routing, and optimization
    - Provides file-based routing, API routes, and automatic code splitting
    - Better SEO and performance compared to CRA
 
 2. **Explain the difference between SSR, SSG, and CSR in Next.js**
+
    - SSR: Server-Side Rendering - pages rendered on each request
    - SSG: Static Site Generation - pages pre-built at build time
    - CSR: Client-Side Rendering - pages rendered in browser
@@ -198,13 +216,16 @@ export const authOptions: NextAuthOptions = {
    - Used: useState, useEffect, useCallback, useMemo, useRef, useContext
 
 #### Intermediate Level
+
 4. **How did you implement the barcode scanner functionality?**
+
    - Used ZXing library for barcode detection
    - MediaDevices API for camera access
    - Implemented continuous scanning with error handling
    - Added offline caching with IndexedDB
 
 5. **Explain your state management approach in the application**
+
    - Local state with useState for component-specific data
    - Context API for global state (theme, auth)
    - Server state managed through API calls and caching
@@ -217,7 +238,9 @@ export const authOptions: NextAuthOptions = {
    - Database session storage with Prisma adapter
 
 #### Advanced Level
+
 7. **How did you optimize the application for mobile devices?**
+
    - Responsive design with Tailwind CSS
    - Mobile-first approach
    - Touch-friendly interfaces
@@ -234,7 +257,9 @@ export const authOptions: NextAuthOptions = {
 ### Database & Backend Questions
 
 #### Basic Level
+
 9. **What is Prisma and why did you choose it?**
+
    - Modern database toolkit with type safety
    - Auto-generated client with TypeScript support
    - Database migrations and schema management
@@ -247,7 +272,9 @@ export const authOptions: NextAuthOptions = {
     - Efficient indexing for queries
 
 #### Intermediate Level
+
 11. **How did you implement the nutrition tracking features?**
+
     - Daily nutrition aggregation queries
     - Weekly trend calculations
     - Goal comparison logic
@@ -260,7 +287,9 @@ export const authOptions: NextAuthOptions = {
     - Input validation and sanitization
 
 #### Advanced Level
+
 13. **How would you scale this application for millions of users?**
+
     - Database sharding and read replicas
     - CDN for static assets
     - Caching layers (Redis)
@@ -277,7 +306,9 @@ export const authOptions: NextAuthOptions = {
 ### AI & External APIs
 
 #### Basic Level
+
 15. **How did you integrate Google Gemini AI?**
+
     - Used Google Generative AI SDK
     - Implemented image and text analysis
     - Structured prompts for nutrition extraction
@@ -290,7 +321,9 @@ export const authOptions: NextAuthOptions = {
     - Caching for offline functionality
 
 #### Intermediate Level
+
 17. **How did you handle API rate limiting and errors?**
+
     - Implemented retry logic with exponential backoff
     - Cached responses to reduce API calls
     - Graceful degradation when APIs fail
@@ -305,7 +338,9 @@ export const authOptions: NextAuthOptions = {
 ### Performance & Optimization
 
 #### Basic Level
+
 19. **What performance optimizations did you implement?**
+
     - Code splitting with Next.js
     - Image optimization
     - Lazy loading of components
@@ -318,7 +353,9 @@ export const authOptions: NextAuthOptions = {
     - Optimized video resolution
 
 #### Advanced Level
+
 21. **How would you implement offline functionality?**
+
     - Service workers for caching
     - IndexedDB for data storage
     - Sync when connection restored
@@ -333,6 +370,7 @@ export const authOptions: NextAuthOptions = {
 ### Testing & Quality Assurance
 
 23. **What testing strategies would you implement?**
+
     - Unit tests for utility functions
     - Integration tests for API endpoints
     - Component testing with React Testing Library
@@ -347,6 +385,7 @@ export const authOptions: NextAuthOptions = {
 ### DevOps & Deployment
 
 25. **How did you deploy the application?**
+
     - Vercel for Next.js deployment
     - Environment variable management
     - Automatic deployments from Git
@@ -363,78 +402,81 @@ export const authOptions: NextAuthOptions = {
 ## 💡 Code Examples & Explanations
 
 ### Custom Hook Example
+
 ```typescript
 // Custom hook for nutrition data fetching
 function useNutritionData(date: string) {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/api/nutrition/daily?date=${date}`)
-        const result = await response.json()
-        setData(result)
+        const response = await fetch(`/api/nutrition/daily?date=${date}`);
+        const result = await response.json();
+        setData(result);
       } catch (error) {
-        console.error('Failed to fetch nutrition data:', error)
+        console.error("Failed to fetch nutrition data:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    
-    fetchData()
-  }, [date])
-  
-  return { data, loading }
+    };
+
+    fetchData();
+  }, [date]);
+
+  return { data, loading };
 }
 ```
 
 ### Error Boundary Implementation
+
 ```typescript
 class ErrorBoundary extends React.Component {
   constructor(props) {
-    super(props)
-    this.state = { hasError: false }
+    super(props);
+    this.state = { hasError: false };
   }
-  
+
   static getDerivedStateFromError(error) {
-    return { hasError: true }
+    return { hasError: true };
   }
-  
+
   componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo)
+    console.error("Error caught by boundary:", error, errorInfo);
   }
-  
+
   render() {
     if (this.state.hasError) {
-      return <ErrorFallback />
+      return <ErrorFallback />;
     }
-    return this.props.children
+    return this.props.children;
   }
 }
 ```
 
 ### API Route with Authentication
+
 ```typescript
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  
+  const session = await getServerSession(authOptions);
+
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
+
   try {
     const meals = await prisma.meal.findMany({
       where: { userId: session.user.id },
-      orderBy: { createdAt: 'desc' }
-    })
-    
-    return NextResponse.json(meals)
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json(meals);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch meals" }, 
+      { error: "Failed to fetch meals" },
       { status: 500 }
-    )
+    );
   }
 }
 ```
@@ -444,6 +486,7 @@ export async function GET(request: NextRequest) {
 ## ⚡ Performance & Optimization
 
 ### Frontend Optimizations
+
 1. **Code Splitting**: Automatic with Next.js App Router
 2. **Image Optimization**: Next.js Image component
 3. **Bundle Analysis**: webpack-bundle-analyzer
@@ -451,12 +494,14 @@ export async function GET(request: NextRequest) {
 5. **Memoization**: React.memo, useMemo, useCallback
 
 ### Backend Optimizations
+
 1. **Database Indexing**: Proper indexes on frequently queried fields
 2. **Query Optimization**: Efficient Prisma queries
 3. **Caching**: API response caching
 4. **Connection Pooling**: Database connection management
 
 ### Mobile Optimizations
+
 1. **Responsive Design**: Mobile-first approach
 2. **Touch Interactions**: Optimized for touch devices
 3. **Performance**: Reduced bundle size for mobile
@@ -467,18 +512,21 @@ export async function GET(request: NextRequest) {
 ## 🔒 Security Considerations
 
 ### Authentication Security
+
 - OAuth 2.0 with Google
 - JWT token validation
 - Session management
 - CSRF protection
 
 ### Data Security
+
 - Input validation and sanitization
 - SQL injection prevention
 - XSS protection
 - Environment variable security
 
 ### API Security
+
 - Rate limiting
 - Authentication middleware
 - Input validation
@@ -489,12 +537,14 @@ export async function GET(request: NextRequest) {
 ## 🚀 Deployment & DevOps
 
 ### Deployment Strategy
+
 1. **Platform**: Vercel for Next.js optimization
 2. **Database**: MongoDB Atlas for managed database
 3. **Environment**: Separate staging and production
 4. **Monitoring**: Error tracking and performance monitoring
 
 ### Environment Configuration
+
 ```bash
 # Production Environment Variables
 NEXTAUTH_URL=https://your-domain.com
@@ -506,6 +556,7 @@ DATABASE_URL=your-mongodb-connection-string
 ```
 
 ### CI/CD Pipeline
+
 1. **Code Push** → GitHub repository
 2. **Automated Testing** → Run test suite
 3. **Build Process** → Next.js build
@@ -519,49 +570,52 @@ DATABASE_URL=your-mongodb-connection-string
 ### Common Issues & Solutions
 
 #### Camera Permission Issues
+
 ```typescript
 // Handle camera permission gracefully
 const handleCameraError = (error: Error) => {
-  if (error.name === 'NotAllowedError') {
-    setError('Camera permission denied. Please allow camera access.')
-  } else if (error.name === 'NotFoundError') {
-    setError('No camera found on this device.')
+  if (error.name === "NotAllowedError") {
+    setError("Camera permission denied. Please allow camera access.");
+  } else if (error.name === "NotFoundError") {
+    setError("No camera found on this device.");
   }
-}
+};
 ```
 
 #### API Rate Limiting
+
 ```typescript
 // Implement retry logic with exponential backoff
 const fetchWithRetry = async (url: string, retries = 3) => {
   try {
-    const response = await fetch(url)
+    const response = await fetch(url);
     if (response.status === 429 && retries > 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries)))
-      return fetchWithRetry(url, retries - 1)
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (4 - retries)));
+      return fetchWithRetry(url, retries - 1);
     }
-    return response
+    return response;
   } catch (error) {
     if (retries > 0) {
-      return fetchWithRetry(url, retries - 1)
+      return fetchWithRetry(url, retries - 1);
     }
-    throw error
+    throw error;
   }
-}
+};
 ```
 
 #### Database Connection Issues
+
 ```typescript
 // Prisma connection handling
 const prisma = new PrismaClient({
-  log: ['query', 'error', 'warn'],
-  errorFormat: 'pretty',
-})
+  log: ["query", "error", "warn"],
+  errorFormat: "pretty",
+});
 
 // Graceful shutdown
-process.on('beforeExit', async () => {
-  await prisma.$disconnect()
-})
+process.on("beforeExit", async () => {
+  await prisma.$disconnect();
+});
 ```
 
 ---
@@ -569,12 +623,14 @@ process.on('beforeExit', async () => {
 ## 📚 Additional Learning Resources
 
 ### Documentation
+
 - [Next.js Documentation](https://nextjs.org/docs)
 - [React Documentation](https://react.dev)
 - [Prisma Documentation](https://www.prisma.io/docs)
 - [NextAuth.js Documentation](https://next-auth.js.org)
 
 ### Best Practices
+
 - [React Best Practices](https://react.dev/learn/thinking-in-react)
 - [Next.js Best Practices](https://nextjs.org/docs/app/building-your-application/routing/defining-routes)
 - [TypeScript Best Practices](https://typescript-eslint.io/rules/)
@@ -585,6 +641,7 @@ process.on('beforeExit', async () => {
 ## 🎯 Project Highlights for Resume
 
 ### Technical Achievements
+
 - Built full-stack nutrition tracking app with 15+ features
 - Implemented real-time barcode scanning with 95% accuracy
 - Integrated AI-powered meal analysis using Google Gemini
@@ -593,6 +650,7 @@ process.on('beforeExit', async () => {
 - Built comprehensive authentication system with OAuth 2.0
 
 ### Key Metrics
+
 - 19 optimized routes with server-side rendering
 - 500,000+ product database integration
 - Real-time data visualization with interactive charts
@@ -600,6 +658,7 @@ process.on('beforeExit', async () => {
 - Type-safe codebase with 100% TypeScript coverage
 
 ### Problem-Solving Examples
+
 - Solved camera flickering issues with proper React lifecycle management
 - Implemented intelligent nutrition scaling for different serving sizes
 - Created fallback UI for offline scenarios
@@ -608,4 +667,4 @@ process.on('beforeExit', async () => {
 
 ---
 
-*This documentation serves as a comprehensive guide for understanding the NutriTrack project architecture, implementation details, and potential interview discussions. Use it to prepare for technical interviews and explain your project decisions.*
+_This documentation serves as a comprehensive guide for understanding the NutriTrack project architecture, implementation details, and potential interview discussions. Use it to prepare for technical interviews and explain your project decisions._
