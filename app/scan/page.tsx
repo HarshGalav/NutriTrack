@@ -19,6 +19,8 @@ function ScanMealContent() {
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false)
   const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null)
   const [barcodeService] = useState(() => new BarcodeService())
+  const [showManualBarcodeEntry, setShowManualBarcodeEntry] = useState(false)
+  const [manualBarcodeInput, setManualBarcodeInput] = useState("")
 
   // Set initial scan mode based on URL parameters
   useEffect(() => {
@@ -171,6 +173,19 @@ function ScanMealContent() {
     setShowBarcodeScanner(true)
   }
 
+  const handleManualBarcodeSubmit = () => {
+    if (manualBarcodeInput.trim()) {
+      setShowManualBarcodeEntry(false)
+      handleBarcodeFound(manualBarcodeInput.trim())
+      setManualBarcodeInput("")
+    }
+  }
+
+  const handleManualBarcodeCancel = () => {
+    setShowManualBarcodeEntry(false)
+    setManualBarcodeInput("")
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="text-center mb-8">
@@ -291,12 +306,7 @@ function ScanMealContent() {
                   </button>
                   
                   <button
-                    onClick={() => {
-                      const barcode = prompt('Enter barcode number:')
-                      if (barcode && barcode.trim()) {
-                        handleBarcodeFound(barcode.trim())
-                      }
-                    }}
+                    onClick={() => setShowManualBarcodeEntry(true)}
                     disabled={isLoading}
                     className="bg-secondary text-secondary-foreground px-6 py-2 rounded-lg hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                   >
@@ -394,6 +404,65 @@ function ScanMealContent() {
           onError={handleBarcodeError}
           onClose={() => setShowBarcodeScanner(false)}
         />
+      )}
+
+      {/* Manual Barcode Entry Modal */}
+      {showManualBarcodeEntry && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 max-w-sm mx-4 w-full border border-border shadow-lg">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4 text-foreground">
+                Enter Barcode Manually
+              </h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                Type or paste the barcode number from the product
+              </p>
+              
+              <div className="mb-6">
+                <input
+                  type="text"
+                  value={manualBarcodeInput}
+                  onChange={(e) => setManualBarcodeInput(e.target.value)}
+                  placeholder="e.g., 1234567890123"
+                  className="w-full px-4 py-3 border border-input rounded-lg text-center text-lg font-mono bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && manualBarcodeInput.trim()) {
+                      handleManualBarcodeSubmit();
+                    } else if (e.key === 'Escape') {
+                      handleManualBarcodeCancel();
+                    }
+                  }}
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Usually 8-13 digits long
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleManualBarcodeCancel}
+                  className="flex-1 px-4 py-2 border border-input text-muted-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleManualBarcodeSubmit}
+                  disabled={!manualBarcodeInput.trim()}
+                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Search Product
+                </button>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  💡 Tip: You can find the barcode on the product packaging, usually near the price tag
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Product Review Modal */}

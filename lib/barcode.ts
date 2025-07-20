@@ -126,10 +126,46 @@ export class BarcodeService {
     barcode: string
   ): ScannedProduct {
     const nutriments = (product.nutriments as Record<string, number>) || {};
+
+    // Get serving size information
     const servingSize =
       (product.serving_size as string) ||
       (product.product_quantity as string) ||
-      "100";
+      (product.quantity as string) ||
+      "100g";
+
+    // Extract numeric value and unit from serving size
+    const servingSizeMatch = servingSize.match(
+      /(\d+(?:\.\d+)?)\s*(g|ml|l|kg)?/i
+    );
+    const servingSizeValue = servingSizeMatch
+      ? parseFloat(servingSizeMatch[1])
+      : 100;
+    const servingUnit = servingSizeMatch
+      ? (servingSizeMatch[2] || "g").toLowerCase()
+      : "g";
+
+    // Convert serving size to grams for calculation (ml ≈ g for most liquids)
+    let servingSizeInGrams = servingSizeValue;
+    if (servingUnit === "l") {
+      servingSizeInGrams = servingSizeValue * 1000; // 1L = 1000g
+    } else if (servingUnit === "kg") {
+      servingSizeInGrams = servingSizeValue * 1000; // 1kg = 1000g
+    }
+    // ml and g are treated the same for nutrition calculation
+
+    // Calculate multiplier to scale from per-100g to actual serving size
+    const nutritionMultiplier = servingSizeInGrams / 100;
+
+    console.log(`Product: ${product.product_name}`);
+    console.log(`Serving size: ${servingSize} (${servingSizeInGrams}g)`);
+    console.log(`Nutrition multiplier: ${nutritionMultiplier}`);
+    console.log(`Protein per 100g: ${nutriments.proteins_100g}g`);
+    console.log(
+      `Protein per serving: ${
+        (nutriments.proteins_100g || 0) * nutritionMultiplier
+      }g`
+    );
 
     return {
       barcode,
@@ -138,25 +174,34 @@ export class BarcodeService {
       imageUrl: product.image_url as string,
       nutrition: {
         calories: Math.round(
-          nutriments.energy_kcal_100g || nutriments["energy-kcal_100g"] || 0
+          (nutriments.energy_kcal_100g || nutriments["energy-kcal_100g"] || 0) *
+            nutritionMultiplier
         ),
-        protein: Math.round((nutriments.proteins_100g || 0) * 10) / 10,
-        carbs: Math.round((nutriments.carbohydrates_100g || 0) * 10) / 10,
-        fat: Math.round((nutriments.fat_100g || 0) * 10) / 10,
+        protein:
+          Math.round(
+            (nutriments.proteins_100g || 0) * nutritionMultiplier * 10
+          ) / 10,
+        carbs:
+          Math.round(
+            (nutriments.carbohydrates_100g || 0) * nutritionMultiplier * 10
+          ) / 10,
+        fat:
+          Math.round((nutriments.fat_100g || 0) * nutritionMultiplier * 10) /
+          10,
         fiber: nutriments.fiber_100g
-          ? Math.round(nutriments.fiber_100g * 10) / 10
+          ? Math.round(nutriments.fiber_100g * nutritionMultiplier * 10) / 10
           : undefined,
         sugar: nutriments.sugars_100g
-          ? Math.round(nutriments.sugars_100g * 10) / 10
+          ? Math.round(nutriments.sugars_100g * nutritionMultiplier * 10) / 10
           : undefined,
         sodium: nutriments.sodium_100g
-          ? Math.round(nutriments.sodium_100g * 1000) / 10
-          : undefined, // Convert to mg
+          ? Math.round(nutriments.sodium_100g * nutritionMultiplier * 1000) / 10 // Convert to mg
+          : undefined,
       },
       serving: {
-        size: parseFloat(servingSize) || 100,
-        unit: (product.serving_size as string) ? "g" : "g",
-        description: (product.serving_size as string) || "100g",
+        size: servingSizeValue,
+        unit: servingUnit,
+        description: servingSize,
       },
       source: "openfoodfacts",
     };

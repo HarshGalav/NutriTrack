@@ -137,7 +137,7 @@ export default function BarcodeScanner({
     return () => {
       stopCamera();
     };
-  }, [startCamera]); // Only run once on mount
+  }, [startCamera]); // Only run once on mount - no dependencies!
 
   const handleManualEntry = () => {
     setShowManualEntry(true);
