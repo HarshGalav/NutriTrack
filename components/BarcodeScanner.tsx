@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Camera, X, RotateCcw, Loader2 } from "lucide-react";
 import { BarcodeService } from "@/lib/barcode";
 
@@ -18,14 +18,16 @@ export default function BarcodeScanner({
   const videoRef = useRef<HTMLVideoElement>(null);
   const barcodeServiceRef = useRef<BarcodeService | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const isInitializedRef = useRef(false);
+  
   const [isScanning, setIsScanning] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
 
-  const stopCamera = () => {
+  // Stable function that won't cause re-renders
+  const stopCamera = useCallback(() => {
     console.log("Stopping camera...");
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
@@ -41,10 +43,10 @@ export default function BarcodeScanner({
       videoRef.current.srcObject = null;
     }
     setIsScanning(false);
-    setHasPermission(null);
-  };
+  }, []);
 
-  const startBarcodeDetection = async (videoElement: HTMLVideoElement) => {
+  // Stable function for barcode detection
+  const startBarcodeDetection = useCallback(async (videoElement: HTMLVideoElement) => {
     if (!barcodeServiceRef.current) return;
 
     try {
@@ -64,17 +66,15 @@ export default function BarcodeScanner({
       console.error("Failed to start barcode detection:", error);
       onError("Failed to start barcode scanning. Please try again.");
     }
-  };
+  }, [isProcessing, onProductFound, onError]);
 
-  const startCamera = async () => {
+  // Stable function for starting camera
+  const startCamera = useCallback(async () => {
     try {
-      setCameraError(null);
-      setHasPermission(null); // Reset permission state
+      setHasPermission(null);
       
-      // Check if getUserMedia is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setHasPermission(false);
-        setCameraError("Camera not supported on this device or browser.");
         return;
       }
 
@@ -94,21 +94,14 @@ export default function BarcodeScanner({
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
         
-        // Wait for video to be ready
         await new Promise<void>((resolve, reject) => {
           if (!videoRef.current) {
             reject(new Error("Video element not available"));
             return;
           }
           
-          videoRef.current.onloadedmetadata = () => {
-            resolve();
-          };
-          
-          videoRef.current.onerror = () => {
-            reject(new Error("Video failed to load"));
-          };
-          
+          videoRef.current.onloadedmetadata = () => resolve();
+          videoRef.current.onerror = () => reject(new Error("Video failed to load"));
           videoRef.current.play().catch(reject);
         });
 
@@ -134,35 +127,49 @@ export default function BarcodeScanner({
         }
       }
 
-      setCameraError(errorMessage);
+      onError(errorMessage);
     }
-  };
+  }, [onError, startBarcodeDetection]);
 
+  // Initialize only once
   useEffect(() => {
+    if (isInitializedRef.current) return;
+    
+    isInitializedRef.current = true;
     barcodeServiceRef.current = new BarcodeService();
     startCamera();
     
     return () => {
       stopCamera();
     };
-  }, [startCamera]); // Only run once on mount - no dependencies!
+  }, [startCamera, stopCamera]);
 
-  const handleManualEntry = () => {
+  const handleClose = useCallback(() => {
+    stopCamera();
+    onClose();
+  }, [stopCamera, onClose]);
+
+  const handleTryAgain = useCallback(() => {
+    stopCamera();
+    setTimeout(() => startCamera(), 100);
+  }, [stopCamera, startCamera]);
+
+  const handleManualEntry = useCallback(() => {
     setShowManualEntry(true);
-  };
+  }, []);
 
-  const handleManualSubmit = () => {
+  const handleManualSubmit = useCallback(() => {
     if (manualBarcode.trim()) {
       setIsProcessing(true);
       setShowManualEntry(false);
       onProductFound(manualBarcode.trim());
     }
-  };
+  }, [manualBarcode, onProductFound]);
 
-  const handleManualCancel = () => {
+  const handleManualCancel = useCallback(() => {
     setShowManualEntry(false);
     setManualBarcode("");
-  };
+  }, []);
 
   if (hasPermission === false) {
     return (
@@ -188,10 +195,7 @@ export default function BarcodeScanner({
             </div>
             <div className="flex space-x-3">
               <button
-                onClick={() => {
-                  stopCamera();
-                  startCamera();
-                }}
+                onClick={handleTryAgain}
                 className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
               >
                 <RotateCcw className="w-4 h-4 inline mr-2" />
@@ -205,10 +209,7 @@ export default function BarcodeScanner({
               </button>
             </div>
             <button
-              onClick={() => {
-                stopCamera();
-                onClose();
-              }}
+              onClick={handleClose}
               className="mt-3 text-gray-500 hover:text-gray-700"
             >
               Cancel
@@ -226,10 +227,7 @@ export default function BarcodeScanner({
         <div className="flex justify-between items-center">
           <h2 className="text-white text-lg font-semibold">Scan Barcode</h2>
           <button 
-            onClick={() => {
-              stopCamera();
-              onClose();
-            }} 
+            onClick={handleClose}
             className="text-white hover:text-gray-300"
           >
             <X className="w-6 h-6" />
@@ -317,9 +315,11 @@ export default function BarcodeScanner({
                   placeholder="e.g., 1234567890123"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   autoFocus
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter' && manualBarcode.trim()) {
                       handleManualSubmit();
+                    } else if (e.key === 'Escape') {
+                      handleManualCancel();
                     }
                   }}
                 />
