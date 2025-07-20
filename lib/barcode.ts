@@ -127,23 +127,42 @@ export class BarcodeService {
   ): ScannedProduct {
     const nutriments = (product.nutriments as Record<string, number>) || {};
 
-    // Get serving size information
+    // Debug: Log all available product fields to understand the data structure
+    console.log("=== PRODUCT DEBUG INFO ===");
+    console.log("Product name:", product.product_name);
+    console.log("Serving size:", product.serving_size);
+    console.log("Product quantity:", product.product_quantity);
+    console.log("Quantity:", product.quantity);
+    console.log("Net quantity:", product.net_quantity);
+    console.log("Package info:", product.packaging);
+    console.log("All product keys:", Object.keys(product));
+    console.log("Nutriments keys:", Object.keys(nutriments));
+
+    // Try multiple fields to get serving size information
     const servingSize =
       (product.serving_size as string) ||
+      (product.net_quantity as string) ||
       (product.product_quantity as string) ||
       (product.quantity as string) ||
       "100g";
 
-    // Extract numeric value and unit from serving size
+    console.log("Selected serving size:", servingSize);
+
+    // Improved regex to handle various formats like "200 ml", "200ml", "200 g", etc.
     const servingSizeMatch = servingSize.match(
-      /(\d+(?:\.\d+)?)\s*(g|ml|l|kg)?/i
+      /(\d+(?:[.,]\d+)?)\s*(g|ml|l|kg|cl)?/i
     );
-    const servingSizeValue = servingSizeMatch
-      ? parseFloat(servingSizeMatch[1])
-      : 100;
-    const servingUnit = servingSizeMatch
-      ? (servingSizeMatch[2] || "g").toLowerCase()
-      : "g";
+
+    let servingSizeValue = 100; // Default fallback
+    let servingUnit = "g"; // Default unit
+
+    if (servingSizeMatch) {
+      servingSizeValue = parseFloat(servingSizeMatch[1].replace(",", "."));
+      servingUnit = (servingSizeMatch[2] || "g").toLowerCase();
+    }
+
+    console.log("Parsed serving size value:", servingSizeValue);
+    console.log("Parsed serving unit:", servingUnit);
 
     // Convert serving size to grams for calculation (ml ≈ g for most liquids)
     let servingSizeInGrams = servingSizeValue;
@@ -151,14 +170,44 @@ export class BarcodeService {
       servingSizeInGrams = servingSizeValue * 1000; // 1L = 1000g
     } else if (servingUnit === "kg") {
       servingSizeInGrams = servingSizeValue * 1000; // 1kg = 1000g
+    } else if (servingUnit === "cl") {
+      servingSizeInGrams = servingSizeValue * 10; // 1cl = 10ml ≈ 10g
     }
     // ml and g are treated the same for nutrition calculation
+
+    // For products that don't have proper serving size, try to detect from product name or quantity
+    if (servingSizeInGrams === 100 && product.product_name) {
+      const productName = (product.product_name as string).toLowerCase();
+      const nameMatch = productName.match(/(\d+)\s*(ml|g|l)/i);
+      if (nameMatch) {
+        const nameValue = parseFloat(nameMatch[1]);
+        const nameUnit = nameMatch[2].toLowerCase();
+        if (nameUnit === "ml" || nameUnit === "g") {
+          servingSizeInGrams = nameValue;
+          console.log(
+            "Found serving size in product name:",
+            nameValue,
+            nameUnit
+          );
+        } else if (nameUnit === "l") {
+          servingSizeInGrams = nameValue * 1000;
+          console.log(
+            "Found serving size in product name:",
+            nameValue,
+            nameUnit,
+            "converted to",
+            servingSizeInGrams,
+            "g"
+          );
+        }
+      }
+    }
 
     // Calculate multiplier to scale from per-100g to actual serving size
     const nutritionMultiplier = servingSizeInGrams / 100;
 
-    console.log(`Product: ${product.product_name}`);
-    console.log(`Serving size: ${servingSize} (${servingSizeInGrams}g)`);
+    console.log("=== NUTRITION CALCULATION ===");
+    console.log(`Final serving size: ${servingSizeInGrams}g`);
     console.log(`Nutrition multiplier: ${nutritionMultiplier}`);
     console.log(`Protein per 100g: ${nutriments.proteins_100g}g`);
     console.log(
@@ -166,6 +215,7 @@ export class BarcodeService {
         (nutriments.proteins_100g || 0) * nutritionMultiplier
       }g`
     );
+    console.log("=== END DEBUG ===");
 
     return {
       barcode,
