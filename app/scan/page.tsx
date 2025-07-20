@@ -333,7 +333,7 @@ function ScanMealContent() {
                         Oreo
                       </button>
                       <button
-                        onClick={() => handleBarcodeFound('3033710084913')}
+                        onClick={() => handleBarcodeFound('8901058000290')}
                         disabled={isLoading}
                         className="text-xs bg-muted text-muted-foreground px-3 py-1 rounded hover:bg-muted/80"
                       >
