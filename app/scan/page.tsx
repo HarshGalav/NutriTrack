@@ -326,14 +326,14 @@ function ScanMealContent() {
                         Nutella
                       </button>
                       <button
-                        onClick={() => handleBarcodeFound('7622210951965')}
+                        onClick={() => handleBarcodeFound('7622300336738')}
                         disabled={isLoading}
                         className="text-xs bg-muted text-muted-foreground px-3 py-1 rounded hover:bg-muted/80"
                       >
                         Oreo
                       </button>
                       <button
-                        onClick={() => handleBarcodeFound('8901030835289')}
+                        onClick={() => handleBarcodeFound('3033710084913')}
                         disabled={isLoading}
                         className="text-xs bg-muted text-muted-foreground px-3 py-1 rounded hover:bg-muted/80"
                       >
