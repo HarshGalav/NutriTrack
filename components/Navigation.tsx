@@ -5,7 +5,7 @@ import { useTheme } from "next-themes"
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
-import { Sun, Moon, User, LogOut, Home, Camera, Settings, BarChart3, Menu, X } from "lucide-react"
+import { Sun, Moon, User, LogOut, Home, Camera, Settings, BarChart3, Menu, X, Info } from "lucide-react"
 
 export function Navigation() {
   const { data: session } = useSession()
@@ -54,6 +54,13 @@ export function Navigation() {
               >
                 <Settings className="w-4 h-4" />
                 <span>Settings</span>
+              </Link>
+              <Link
+                href="/about"
+                className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+              >
+                <Info className="w-4 h-4" />
+                <span>About</span>
               </Link>
             </div>
           )}
@@ -148,6 +155,14 @@ export function Navigation() {
             >
               <Settings className="w-5 h-5" />
               <span>Settings</span>
+            </Link>
+            <Link
+              href="/about"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium hover:bg-accent hover:text-accent-foreground"
+            >
+              <Info className="w-5 h-5" />
+              <span>About</span>
             </Link>
             
             {/* Mobile user info and sign out */}
