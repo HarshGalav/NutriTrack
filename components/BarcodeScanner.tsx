@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, X, RotateCcw, Loader2 } from "lucide-react";
 import { BarcodeService } from "@/lib/barcode";
 
@@ -17,33 +17,31 @@ export default function BarcodeScanner({
 }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const barcodeServiceRef = useRef<BarcodeService | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [scanningActive, setScanningActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualBarcode, setManualBarcode] = useState("");
 
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
     if (barcodeServiceRef.current) {
       barcodeServiceRef.current.stopDecoding();
     }
     setIsScanning(false);
-    setScanningActive(false);
-  }, [stream]);
+  };
 
-  const startBarcodeDetection = useCallback(async () => {
-    if (!videoRef.current || !barcodeServiceRef.current || scanningActive)
-      return;
-
-    setScanningActive(true);
+  const startBarcodeDetection = async (videoElement: HTMLVideoElement) => {
+    if (!barcodeServiceRef.current) return;
 
     try {
       await barcodeServiceRef.current.startContinuousDecoding(
-        videoRef.current,
+        videoElement,
         (barcode) => {
           if (!isProcessing) {
             setIsProcessing(true);
@@ -58,17 +56,21 @@ export default function BarcodeScanner({
       console.error("Failed to start barcode detection:", error);
       onError("Failed to start barcode scanning. Please try again.");
     }
-  }, [scanningActive, isProcessing, onProductFound, onError]);
+  };
 
-  const startCamera = useCallback(async () => {
+  const startCamera = async () => {
     try {
+      setCameraError(null);
+      setHasPermission(null); // Reset permission state
+      
       // Check if getUserMedia is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setHasPermission(false);
-        onError("Camera not supported on this device or browser.");
+        setCameraError("Camera not supported on this device or browser.");
         return;
       }
 
+      console.log("Requesting camera permission...");
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "environment",
@@ -77,26 +79,44 @@ export default function BarcodeScanner({
         },
       });
 
-      setStream(mediaStream);
+      console.log("Camera permission granted, setting up video...");
+      streamRef.current = mediaStream;
       setHasPermission(true);
 
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        await videoRef.current.play();
+        
+        // Wait for video to be ready
+        await new Promise<void>((resolve, reject) => {
+          if (!videoRef.current) {
+            reject(new Error("Video element not available"));
+            return;
+          }
+          
+          videoRef.current.onloadedmetadata = () => {
+            resolve();
+          };
+          
+          videoRef.current.onerror = () => {
+            reject(new Error("Video failed to load"));
+          };
+          
+          videoRef.current.play().catch(reject);
+        });
+
+        console.log("Video ready, starting barcode detection...");
         setIsScanning(true);
-        startBarcodeDetection();
+        await startBarcodeDetection(videoRef.current);
       }
     } catch (error: unknown) {
       console.error("Camera access error:", error);
       setHasPermission(false);
 
-      let errorMessage =
-        "Camera access denied. Please allow camera permissions and try again.";
+      let errorMessage = "Camera access denied. Please allow camera permissions and try again.";
 
       if (error instanceof Error) {
         if (error.name === "NotAllowedError") {
-          errorMessage =
-            "Camera permission denied. Please click the camera icon in your browser address bar and allow camera access, then refresh the page.";
+          errorMessage = "Camera permission denied. Please allow camera access and try again.";
         } else if (error.name === "NotFoundError") {
           errorMessage = "No camera found on this device.";
         } else if (error.name === "NotSupportedError") {
@@ -106,27 +126,34 @@ export default function BarcodeScanner({
         }
       }
 
-      onError(errorMessage);
+      setCameraError(errorMessage);
     }
-  }, [onError, startBarcodeDetection]);
+  };
 
   useEffect(() => {
     barcodeServiceRef.current = new BarcodeService();
     startCamera();
+    
     return () => {
       stopCamera();
-      if (barcodeServiceRef.current) {
-        barcodeServiceRef.current.stopDecoding();
-      }
     };
-  }, [startCamera, stopCamera]);
+  }, [startCamera]); // Only run once on mount
 
   const handleManualEntry = () => {
-    const barcode = prompt("Enter barcode manually:");
-    if (barcode && barcode.trim()) {
+    setShowManualEntry(true);
+  };
+
+  const handleManualSubmit = () => {
+    if (manualBarcode.trim()) {
       setIsProcessing(true);
-      onProductFound(barcode.trim());
+      setShowManualEntry(false);
+      onProductFound(manualBarcode.trim());
     }
+  };
+
+  const handleManualCancel = () => {
+    setShowManualEntry(false);
+    setManualBarcode("");
   };
 
   if (hasPermission === false) {
@@ -249,6 +276,63 @@ export default function BarcodeScanner({
           </p>
         </div>
       </div>
+
+      {/* Manual Entry Modal */}
+      {showManualEntry && (
+        <div className="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-20">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 w-full">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                Enter Barcode Manually
+              </h3>
+              <p className="text-gray-600 text-sm mb-4">
+                Type or paste the barcode number from the product
+              </p>
+              
+              <div className="mb-6">
+                <input
+                  type="text"
+                  value={manualBarcode}
+                  onChange={(e) => setManualBarcode(e.target.value)}
+                  placeholder="e.g., 1234567890123"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  autoFocus
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && manualBarcode.trim()) {
+                      handleManualSubmit();
+                    }
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Usually 8-13 digits long
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleManualCancel}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleManualSubmit}
+                  disabled={!manualBarcode.trim()}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Search Product
+                </button>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-xs text-gray-500">
+                  💡 Tip: You can find the barcode on the product packaging, usually near the price tag
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
